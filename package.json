@@ -1,6 +1,6 @@
 {
   "name": "universal-calendar-qr-generator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Generate universal calendar QR codes for iPhone, Android & all devices",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

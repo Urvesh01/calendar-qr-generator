@@ -9,7 +9,8 @@
 ## ✨ Features
 
 - ✅ **Zero Dependencies** - Pure TypeScript implementation, no external packages required
-- ✅ **Universal Calendar Format** - Uses ICS/iCalendar standard (RFC 5545)
+- ✅ **Direct Calendar Open** - QR code opens directly in Google Calendar, Outlook, or Yahoo when scanned
+- ✅ **Universal Calendar Format** - Also supports ICS/iCalendar standard (RFC 5545)
 - ✅ **Works Worldwide** - China, India, USA, Europe - works everywhere!
 - ✅ **Cross-Platform** - iPhone (Apple Calendar), Android (Google Calendar), Outlook, and more
 - ✅ **Offline Capable** - Generates QR codes locally in browser
@@ -39,10 +40,10 @@ npm i universal-calendar-qr-generator
 
 ## 🚀 Quick Start
 
-### Basic Usage
+### Basic Usage (Recommended for Production)
 
 ```typescript
-import { CalendarQR, CalendarEvent } from '@yourname/calendar-qr-generator';
+import { CalendarQR, CalendarEvent } from 'universal-calendar-qr-generator';
 
 // Define your event
 const event: CalendarEvent = {
@@ -53,11 +54,70 @@ const event: CalendarEvent = {
   description: 'Monthly team sync meeting'
 };
 
-// Generate QR code as data URL
+// Generate QR code using ICS format (universal, offline, no external dependencies)
 const qrCodeDataUrl = await CalendarQR.generate(event);
 
 // Use in HTML
 document.getElementById('qr-image').src = qrCodeDataUrl;
+```
+
+## ⚠️ Important: Choosing the Right Method
+
+This package offers **two approaches** - choose based on your needs:
+
+### 1. ICS Format (DEFAULT - Recommended for Production) ✅
+
+```typescript
+// Uses universal iCalendar standard (RFC 5545)
+const qrCode = await CalendarQR.generate(event);
+// or explicitly:
+const qrCode = await CalendarQR.generateICS(event);
+```
+
+| Pros | Cons |
+|------|------|
+| ✅ No external dependencies | ⚠️ Some QR scanners show text instead of opening calendar |
+| ✅ Works offline | ⚠️ May require user to copy/save the ICS content |
+| ✅ Universal standard (RFC 5545) | |
+| ✅ Future-proof, won't break | |
+| ✅ Works in all countries | |
+
+### 2. URL-Based (Optional - Use with Caution) ⚠️
+
+```typescript
+// Opens directly in Google Calendar (depends on Google's service)
+const googleQR = await CalendarQR.generateGoogleCalendarQR(event);
+
+// Opens directly in Outlook (depends on Microsoft's service)
+const outlookQR = await CalendarQR.generateOutlookCalendarQR(event);
+
+// Opens directly in Yahoo Calendar (depends on Yahoo's service)
+const yahooQR = await CalendarQR.generateYahooCalendarQR(event);
+```
+
+| Pros | Cons |
+|------|------|
+| ✅ Opens calendar app directly | ❌ **Depends on external services** |
+| ✅ Better user experience | ❌ **URLs may change without notice** |
+| | ❌ **Requires internet connection** |
+| | ❌ **May not work in some countries (e.g., Google blocked in China)** |
+| | ❌ **Could break in production if service changes** |
+
+### 🏭 Production Recommendation
+
+For **production applications**, we recommend using the **ICS format** (default `generate()` method) because:
+
+1. **No external dependencies** - Your app won't break if Google/Microsoft/Yahoo change their URLs
+2. **Works offline** - No internet required to display the QR code
+3. **Universal standard** - iCalendar (RFC 5545) is an established standard
+4. **Works worldwide** - No regional service restrictions
+
+```typescript
+// ✅ SAFE FOR PRODUCTION
+const qrCode = await CalendarQR.generate(event);
+
+// ⚠️ USE WITH CAUTION IN PRODUCTION
+const googleQR = await CalendarQR.generateGoogleCalendarQR(event);
 ```
 
 ### Angular 18+ Integration

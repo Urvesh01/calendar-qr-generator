@@ -13,6 +13,119 @@ export interface QRCodeOptions {
   lightColor?: string;
 }
 
+export type CalendarType = 'google' | 'outlook' | 'yahoo' | 'ics';
+
+/**
+ * Generates calendar URLs that open directly in calendar apps when scanned
+ */
+export class CalendarURLGenerator {
+  /**
+   * Format date for Google Calendar URL (YYYYMMDDTHHmmssZ)
+   */
+  private static formatDateForGoogle(date: Date): string {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+  }
+
+  /**
+   * Format date for Outlook URL (ISO format)
+   */
+  private static formatDateForOutlook(date: Date): string {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  }
+
+  /**
+   * Generate Google Calendar URL - Opens directly in Google Calendar
+   */
+  static generateGoogleCalendarURL(event: CalendarEvent): string {
+    const baseUrl = 'https://calendar.google.com/calendar/render';
+    const params = new URLSearchParams();
+    
+    params.append('action', 'TEMPLATE');
+    params.append('text', event.eventName);
+    params.append('dates', `${this.formatDateForGoogle(event.startDateTime)}/${this.formatDateForGoogle(event.endDateTime)}`);
+    
+    if (event.location) {
+      params.append('location', event.location);
+    }
+    
+    if (event.description) {
+      params.append('details', event.description);
+    }
+
+    return `${baseUrl}?${params.toString()}`;
+  }
+
+  /**
+   * Generate Outlook Calendar URL - Opens directly in Outlook
+   */
+  static generateOutlookCalendarURL(event: CalendarEvent): string {
+    const baseUrl = 'https://outlook.live.com/calendar/0/deeplink/compose';
+    const params = new URLSearchParams();
+    
+    params.append('path', '/calendar/action/compose');
+    params.append('rru', 'addevent');
+    params.append('subject', event.eventName);
+    params.append('startdt', event.startDateTime.toISOString());
+    params.append('enddt', event.endDateTime.toISOString());
+    
+    if (event.location) {
+      params.append('location', event.location);
+    }
+    
+    if (event.description) {
+      params.append('body', event.description);
+    }
+
+    return `${baseUrl}?${params.toString()}`;
+  }
+
+  /**
+   * Generate Yahoo Calendar URL - Opens directly in Yahoo Calendar
+   */
+  static generateYahooCalendarURL(event: CalendarEvent): string {
+    const baseUrl = 'https://calendar.yahoo.com/';
+    const params = new URLSearchParams();
+    
+    params.append('v', '60');
+    params.append('title', event.eventName);
+    params.append('st', this.formatDateForGoogle(event.startDateTime));
+    params.append('et', this.formatDateForGoogle(event.endDateTime));
+    
+    if (event.location) {
+      params.append('in_loc', event.location);
+    }
+    
+    if (event.description) {
+      params.append('desc', event.description);
+    }
+
+    return `${baseUrl}?${params.toString()}`;
+  }
+
+  /**
+   * Generate URL based on calendar type
+   */
+  static generateURL(event: CalendarEvent, calendarType: CalendarType): string {
+    switch (calendarType) {
+      case 'google':
+        return this.generateGoogleCalendarURL(event);
+      case 'outlook':
+        return this.generateOutlookCalendarURL(event);
+      case 'yahoo':
+        return this.generateYahooCalendarURL(event);
+      case 'ics':
+      default:
+        return ICSGenerator.generate(event);
+    }
+  }
+}
+
 /**
  * Generates ICS (iCalendar) content from event data
  */
@@ -247,11 +360,35 @@ export class QRCodeGenerator {
 }
 
 /**
- * Main CalendarQR class - combines ICS and QR generation
+ * Main CalendarQR class - combines URL and QR generation
+ * 
+ * IMPORTANT: This package provides two approaches:
+ * 
+ * 1. ICS FORMAT (DEFAULT - RECOMMENDED FOR PRODUCTION):
+ *    - Uses standard iCalendar format (RFC 5545)
+ *    - Works offline, no external dependencies
+ *    - Universal standard that won't change
+ *    - Methods: generate(), generateICS(), getICS()
+ * 
+ * 2. URL-BASED (OPTIONAL - USE WITH CAUTION):
+ *    - Depends on external services (Google, Outlook, Yahoo)
+ *    - URLs may change without notice
+ *    - Requires internet connection
+ *    - May not work in regions where services are blocked
+ *    - Methods: generateGoogleCalendarQR(), generateOutlookCalendarQR(), etc.
  */
 export class CalendarQR {
   /**
-   * Generate QR code for calendar event
+   * Generate QR code for calendar event using ICS format (RECOMMENDED)
+   * 
+   * This is the safest option for production:
+   * - Uses universal iCalendar standard (RFC 5545)
+   * - No external API dependencies
+   * - Works offline
+   * - Future-proof standard
+   * 
+   * Note: Some QR scanners may show the ICS text. For best experience,
+   * provide instructions to users on how to add the event to their calendar.
    */
   static async generate(
     event: CalendarEvent,
@@ -262,14 +399,120 @@ export class CalendarQR {
   }
 
   /**
+   * Generate QR code using ICS format (same as generate, explicit naming)
+   */
+  static async generateICS(
+    event: CalendarEvent,
+    options?: QRCodeOptions
+  ): Promise<string> {
+    return this.generate(event, options);
+  }
+
+  /**
+   * Generate QR code for specific calendar type
+   * @param event - Calendar event details
+   * @param calendarType - 'ics' (recommended) | 'google' | 'outlook' | 'yahoo'
+   * @param options - QR code options
+   * 
+   * WARNING: 'google', 'outlook', 'yahoo' options depend on external services
+   * and may break if those services change their URL structure.
+   */
+  static async generateForCalendar(
+    event: CalendarEvent,
+    calendarType: CalendarType,
+    options?: QRCodeOptions
+  ): Promise<string> {
+    if (calendarType === 'ics') {
+      return this.generate(event, options);
+    }
+    const url = CalendarURLGenerator.generateURL(event, calendarType);
+    return QRCodeGenerator.generateDataURL(url, options);
+  }
+
+  /**
+   * Generate QR code using Google Calendar URL
+   * 
+   * ⚠️ WARNING: This method depends on Google's external service.
+   * - URL structure may change without notice
+   * - Requires internet connection
+   * - May not work in countries where Google is blocked (e.g., China)
+   * - For production apps, consider using generate() with ICS format instead
+   */
+  static async generateGoogleCalendarQR(
+    event: CalendarEvent,
+    options?: QRCodeOptions
+  ): Promise<string> {
+    const url = CalendarURLGenerator.generateGoogleCalendarURL(event);
+    return QRCodeGenerator.generateDataURL(url, options);
+  }
+
+  /**
+   * Generate QR code using Outlook Calendar URL
+   * 
+   * ⚠️ WARNING: This method depends on Microsoft's external service.
+   * - URL structure may change without notice
+   * - Requires internet connection
+   * - For production apps, consider using generate() with ICS format instead
+   */
+  static async generateOutlookCalendarQR(
+    event: CalendarEvent,
+    options?: QRCodeOptions
+  ): Promise<string> {
+    const url = CalendarURLGenerator.generateOutlookCalendarURL(event);
+    return QRCodeGenerator.generateDataURL(url, options);
+  }
+
+  /**
+   * Generate QR code using Yahoo Calendar URL
+   * 
+   * ⚠️ WARNING: This method depends on Yahoo's external service.
+   * - URL structure may change without notice
+   * - Requires internet connection
+   * - For production apps, consider using generate() with ICS format instead
+   */
+  static async generateYahooCalendarQR(
+    event: CalendarEvent,
+    options?: QRCodeOptions
+  ): Promise<string> {
+    const url = CalendarURLGenerator.generateYahooCalendarURL(event);
+    return QRCodeGenerator.generateDataURL(url, options);
+  }
+
+  /**
+   * Get the Google Calendar URL directly
+   * ⚠️ WARNING: Depends on external Google service
+   */
+  static getGoogleCalendarURL(event: CalendarEvent): string {
+    return CalendarURLGenerator.generateGoogleCalendarURL(event);
+  }
+
+  /**
+   * Get the Outlook Calendar URL directly
+   * ⚠️ WARNING: Depends on external Microsoft service
+   */
+  static getOutlookCalendarURL(event: CalendarEvent): string {
+    return CalendarURLGenerator.generateOutlookCalendarURL(event);
+  }
+
+  /**
+   * Get the Yahoo Calendar URL directly
+   * ⚠️ WARNING: Depends on external Yahoo service
+   */
+  static getYahooCalendarURL(event: CalendarEvent): string {
+    return CalendarURLGenerator.generateYahooCalendarURL(event);
+  }
+
+  /**
    * Download QR code as PNG image
+   * Default uses ICS format (safe for production)
    */
   static async downloadQRCode(
     event: CalendarEvent,
     filename?: string,
-    options?: QRCodeOptions
+    options?: QRCodeOptions,
+    calendarType: CalendarType = 'ics'
   ): Promise<void> {
-    const dataUrl = await this.generate(event, options);
+    const dataUrl = await this.generateForCalendar(event, calendarType, options);
     const link = document.createElement('a');
     link.href = dataUrl;
     link.download = filename || `calendar-qr-${event.eventName.replace(/\s+/g, '-').toLowerCase()}.png`;
@@ -279,19 +522,20 @@ export class CalendarQR {
   }
 
   /**
-   * Get ICS content
+   * Get ICS content - Universal calendar format (RFC 5545)
+   * This is the safest format for production use.
    */
   static getICS(event: CalendarEvent): string {
     return ICSGenerator.generate(event);
   }
 
   /**
-   * Download ICS file
+   * Download ICS file directly
    */
   static downloadICS(event: CalendarEvent, filename?: string): void {
     ICSGenerator.downloadICS(event, filename);
   }
 }
 
-// Export all classes
+// Export default
 export default CalendarQR;

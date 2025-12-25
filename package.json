@@ -4,6 +4,10 @@
   "description": "Generate universal calendar QR codes for iPhone, Android & all devices",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Urvesh01/calendar-qr-generator.git"
+  },
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",

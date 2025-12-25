@@ -1,0 +1,30 @@
+{
+  "name": "universal-calendar-qr-generator",
+  "version": "1.0.1",
+  "description": "Generate universal calendar QR codes for iPhone, Android & all devices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "publish:npm": "npm publish --access public"
+  },
+  "keywords": [
+    "qr-code",
+    "calendar",
+    "ics",
+    "icalendar",
+    "qr-generator",
+    "universal-calendar",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}

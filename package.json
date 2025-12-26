@@ -3,15 +3,28 @@
   "version": "2.0.1",
   "description": "Generate universal calendar QR codes for iPhone, Android & all devices - Zero external dependencies",
   "main": "dist/index.js",
+  "module": "dist/index.js",
+  "type": "module",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Urvesh01/calendar-qr-generator.git"
   },
+  "homepage": "https://github.com/Urvesh01/calendar-qr-generator#readme",
+  "bugs": {
+    "url": "https://github.com/Urvesh01/calendar-qr-generator/issues"
+  },
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build",
-    "publish:npm": "npm publish --access public"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"No tests yet\" && exit 0"
   },
   "keywords": [
     "qr-code",
@@ -20,15 +33,23 @@
     "icalendar",
     "qr-generator",
     "universal-calendar",
-    "typescript"
+    "typescript",
+    "zero-dependencies",
+    "offline",
+    "privacy-first"
   ],
-  "author": "Your Name",
+  "author": "Urvesh <your-email@example.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@types/node": "^20.0.0"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ]
 }

@@ -1,30 +1,21 @@
-import { CalendarEvent, QRStylingOptions } from "./types";
+import { CalendarEvent } from "./types";
 import { generateICS } from "./calendar/ics";
 import { encodeText } from "./qr/encoder";
 import { reedSolomon } from "./qr/reed-solomon";
 import { createMatrix } from "./qr/matrix";
 import { placeData } from "./qr/placer";
 import { applyMask } from "./qr/mask";
-import { renderPNG, renderStyledQR } from "./render/png";
-import { processStylingOptions } from "./styling/processor";
+import { renderPNG } from "./render/png";
 
 export interface CalendarQROptions {
   errorCorrectionLevel?: "L" | "M" | "Q" | "H";
   size?: number;
   margin?: number;
-  styling?: QRStylingOptions;
 }
 
 /**
  * Main CalendarQR API - Pure implementation with ZERO external dependencies
  * Uses ICS (iCalendar) format - universal, offline, works everywhere
- *
- * Now with full styling support:
- * - Custom dot styles (square, rounded, classy, etc.)
- * - Custom corner styles
- * - Gradients (linear and radial)
- * - Background customization
- * - Logo/image overlay
  */
 export class CalendarQR {
   /**
@@ -43,10 +34,9 @@ export class CalendarQR {
    * ✅ No backend required - no infrastructure costs
    * ✅ Privacy-first - no data sent to external servers
    * ✅ Universal - works on all devices
-   * ✅ Full styling support - customizable appearance
    *
    * @param event - Calendar event details
-   * @param options - QR code generation and styling options
+   * @param options - QR code generation options
    * @returns Data URL for QR code image (SVG format)
    */
   static async generate(
@@ -83,54 +73,16 @@ export class CalendarQR {
     // 5. Apply mask pattern
     applyMask(matrix, 0);
 
-    // 6. Render with optional styling
-    let svg: string;
-
-    if (options.styling) {
-      // Process and apply styling options
-      const stylingOptions = processStylingOptions(options.styling);
-      svg = renderStyledQR(matrix, stylingOptions);
-    } else {
-      // Legacy rendering without styling
-      svg = renderPNG(matrix, {
-        scale: options.size || 10,
-        margin: options.margin || 4,
-      });
-    }
+    // 6. Render to SVG (offline, no external services)
+    const svg = renderPNG(matrix, {
+      scale: options.size || 10,
+      margin: options.margin || 4,
+    });
 
     // Convert SVG to data URL
     const dataUrl = `data:image/svg+xml;base64,${Buffer.from(svg).toString(
       "base64"
     )}`;
     return dataUrl;
-  }
-
-  /**
-   * Get default styling options
-   * Useful for customization starting points
-   */
-  static getDefaultStyling(): QRStylingOptions {
-    return {
-      width: 300,
-      height: 300,
-      type: "svg",
-      shape: "square",
-      margin: 0,
-      dotsOptions: {
-        color: "#000000",
-        type: "square",
-      },
-      backgroundOptions: {
-        color: "#ffffff",
-      },
-      cornersSquareOptions: {
-        color: "#000000",
-        type: "square",
-      },
-      cornersDotOptions: {
-        color: "#000000",
-        type: "square",
-      },
-    };
   }
 }

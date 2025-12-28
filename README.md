@@ -17,10 +17,6 @@
 - ✅ **Lightweight** - Small bundle size (11.3 kB)
 - ✅ **Privacy-First** - No data sent to external servers
 - ✅ **Pure QR Implementation** - Custom QR encoder from scratch
-- ✅ **Full Styling Support** - Custom colors, gradients, shapes, logos
-- ✅ **6+ Dot Styles** - Square, rounded, dots, classy, and more
-- ✅ **Gradient Support** - Linear and radial gradients
-- ✅ **Logo/Image Overlay** - Embed company logos with custom sizing
 
 ## 🌍 Device Compatibility
 
@@ -44,8 +40,6 @@ npm i universal-calendar-qr-generator
 
 ## 🚀 Quick Start
 
-### Basic Usage
-
 ```typescript
 import { CalendarQR, CalendarEvent } from "universal-calendar-qr-generator";
 
@@ -63,28 +57,6 @@ const qrCodeDataUrl = await CalendarQR.generate(event);
 
 // Use in HTML
 document.getElementById("qr-image").src = qrCodeDataUrl;
-```
-
-### With Custom Styling
-
-```typescript
-const qrCodeDataUrl = await CalendarQR.generate(event, {
-  styling: {
-    width: 300,
-    height: 300,
-    dotsOptions: {
-      color: "#4267b2",
-      type: "rounded",
-    },
-    backgroundOptions: {
-      color: "#f0f0f0",
-    },
-    cornersSquareOptions: {
-      color: "#4267b2",
-      type: "rounded",
-    },
-  },
-});
 ```
 
 ## 📱 How It Works When Scanned
@@ -209,93 +181,6 @@ interface CalendarQROptions {
   errorCorrectionLevel?: "L" | "M" | "Q" | "H"; // QR error correction (default: 'M')
   size?: number; // QR module size (default: 10)
   margin?: number; // QR margin (default: 4)
-  styling?: QRStylingOptions; // Optional: Custom styling
-}
-```
-
-### `QRStylingOptions` Interface
-
-```typescript
-interface QRStylingOptions {
-  width?: number; // default: 300
-  height?: number; // default: 300
-  type?: "canvas" | "svg"; // default: 'svg'
-  margin?: number; // default: 0
-  dotsOptions?: DotsOptions; // QR dot styling
-  backgroundOptions?: BackgroundOptions; // Background styling
-  cornersSquareOptions?: CornersSquareOptions; // Corner square styling
-  cornersDotOptions?: CornersDotOptions; // Corner dot styling
-  imageOptions?: ImageOptions; // Logo/image overlay
-}
-```
-
-### Styling Types
-
-#### `DotsOptions` - Customize QR Dots
-
-```typescript
-interface DotsOptions {
-  color?: string; // Dot color (default: '#000000')
-  type?: DotsType; // 'square' | 'rounded' | 'dots' | 'classy' | 'classy-rounded' | 'extra-rounded'
-  gradient?: GradientOptions; // Optional gradient instead of solid color
-  roundSize?: boolean; // Round size to integer (default: true)
-}
-```
-
-#### `BackgroundOptions` - Customize Background
-
-```typescript
-interface BackgroundOptions {
-  color?: string; // Background color (default: '#ffffff')
-  gradient?: GradientOptions; // Optional gradient instead of solid color
-}
-```
-
-#### `CornersSquareOptions` - Customize Corner Squares
-
-```typescript
-interface CornersSquareOptions {
-  color?: string;
-  type?: CornersType; // 'square' | 'rounded' | 'extra-rounded' | 'dot' | 'dots' | 'classy' | 'classy-rounded'
-  gradient?: GradientOptions;
-}
-```
-
-#### `CornersDotOptions` - Customize Corner Dots
-
-```typescript
-interface CornersDotOptions {
-  color?: string;
-  type?: CornersType;
-  gradient?: GradientOptions;
-}
-```
-
-#### `GradientOptions` - Linear/Radial Gradients
-
-```typescript
-interface GradientOptions {
-  type?: "linear" | "radial"; // default: 'linear'
-  rotation?: number; // Rotation in radians (only for linear)
-  colorStops: GradientColorStop[];
-}
-
-interface GradientColorStop {
-  offset: number; // 0 to 1
-  color: string; // hex, rgb, or named color
-}
-```
-
-#### `ImageOptions` - Logo/Image Overlay
-
-```typescript
-interface ImageOptions {
-  src?: string; // Image URL
-  hideBackgroundDots?: boolean; // Hide dots behind image (default: true)
-  imageSize?: number; // Size coefficient 0-1 (default: 0.4)
-  margin?: number; // Padding around image (default: 0)
-  crossOrigin?: "anonymous" | "use-credentials"; // CORS setting
-  saveAsBlob?: boolean; // Convert to base64 (default: true)
 }
 ```
 
@@ -318,23 +203,8 @@ CalendarQR.generate(
 const qrDataUrl = await CalendarQR.generate(event, {
   size: 15,
   margin: 6,
-  styling: {
-    dotsOptions: {
-      color: "#4267b2",
-      type: "rounded",
-    },
-  },
+  errorCorrectionLevel: "H",
 });
-```
-
-### `CalendarQR.getDefaultStyling()`
-
-Get default styling options for customization.
-
-```typescript
-const defaultStyling = CalendarQR.getDefaultStyling();
-defaultStyling.dotsOptions.color = "#ff0000";
-const qrCode = await CalendarQR.generate(event, { styling: defaultStyling });
 ```
 
 ### `generateICS()` Utility
@@ -348,80 +218,6 @@ const icsContent = generateICS(event);
 console.log(icsContent);
 // Output: BEGIN:VCALENDAR\nVERSION:2.0\n...
 ```
-
-## 🎨 Styling Examples
-
-### Professional Brand QR
-
-```typescript
-const qrCode = await CalendarQR.generate(event, {
-  styling: {
-    width: 400,
-    height: 400,
-    dotsOptions: {
-      color: "#003366",
-      type: "rounded",
-    },
-    backgroundOptions: {
-      color: "#f0f0f0",
-    },
-    cornersSquareOptions: {
-      color: "#003366",
-      type: "rounded",
-    },
-    imageOptions: {
-      src: "https://example.com/logo.png",
-      imageSize: 0.3,
-      margin: 15,
-    },
-  },
-});
-```
-
-### Gradient Styled QR
-
-```typescript
-const qrCode = await CalendarQR.generate(event, {
-  styling: {
-    dotsOptions: {
-      type: "dots",
-      gradient: {
-        type: "linear",
-        rotation: Math.PI / 4,
-        colorStops: [
-          { offset: 0, color: "blue" },
-          { offset: 1, color: "purple" },
-        ],
-      },
-    },
-    backgroundOptions: {
-      color: "#ffffff",
-    },
-  },
-});
-```
-
-### Classy Modern Style
-
-```typescript
-const qrCode = await CalendarQR.generate(event, {
-  styling: {
-    dotsOptions: {
-      color: "#1a1a1a",
-      type: "classy-rounded",
-    },
-    backgroundOptions: {
-      color: "#fafafa",
-    },
-    cornersSquareOptions: {
-      color: "#ff6b6b",
-      type: "classy-rounded",
-    },
-  },
-});
-```
-
-**For more styling examples, see [STYLING_GUIDE.md](STYLING_GUIDE.md) and [STYLING_EXAMPLES.ts](STYLING_EXAMPLES.ts)**
 
 ## 💡 Advanced Usage
 

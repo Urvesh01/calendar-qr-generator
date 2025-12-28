@@ -10,39 +10,15 @@ import { CalendarEvent, QRCodeOptions } from "./types";
 // Export main API
 export { CalendarQR, CalendarQROptions } from "./api";
 
-// Export all types including styling
+// Export types
 export type {
   CalendarEvent,
   QRCodeOptions,
   ErrorCorrectionLevel,
-  QRStylingOptions,
-  DotsOptions,
-  BackgroundOptions,
-  CornersSquareOptions,
-  CornersDotOptions,
-  ImageOptions,
-  GradientOptions,
-  GradientColorStop,
-  DotsType,
-  CornersType,
-  GradientType,
-  QRShape,
 } from "./types";
 
 // Export utilities
 export { generateICS } from "./calendar/ics";
-
-// Export styling processors and utilities
-export {
-  processStylingOptions,
-  DEFAULT_STYLING_OPTIONS,
-} from "./styling/processor";
-export * from "./styling/dots";
-export * from "./styling/corners";
-export * from "./styling/gradients";
-export * from "./styling/background";
-export * from "./styling/image";
-export { renderStyledQR } from "./render/png";
 
 /**
  * Convert text to QR code string (terminal output)
